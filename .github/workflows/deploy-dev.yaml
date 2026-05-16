@@ -1,0 +1,49 @@
+name: Deploy Dev
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+
+jobs:
+  deploy-dev:
+    if: github.event.pull_request.merged == true
+    runs-on: [self-hosted, paris]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: eu-west-1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.0"
+
+      - name: Setup Terragrunt
+        run: |
+          wget -q https://github.com/gruntwork-io/terragrunt/releases/download/v0.55.0/terragrunt_linux_amd64
+          chmod +x terragrunt_linux_amd64
+          mv terragrunt_linux_amd64 /usr/local/bin/terragrunt
+
+      - name: Deploy to Dev
+        run: |
+          cd environments/dev
+          terragrunt run-all apply --terragrunt-non-interactive
+
+      - name: Run Smoke Tests
+        run: |
+          chmod +x scripts/smoke-tests.sh
+          ./scripts/smoke-tests.sh
+
+      - name: Destroy Dev
+        if: always()
+        run: |
+          cd environments/dev
+          terragrunt run-all destroy --terragrunt-non-interactive
