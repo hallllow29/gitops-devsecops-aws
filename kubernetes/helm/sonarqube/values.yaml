@@ -1,0 +1,22 @@
+serviceAccount:
+  annotations:
+    eks.amazonaws.com/role-arn: "${sonarqube_role_arn}"
+
+resources:
+  requests:
+    cpu: "500m"
+    memory: "1Gi"
+  limits:
+    cpu: "1000m"
+    memory: "2Gi"
+
+persistence:
+  enabled: true
+  storageClass: "gp2"
+  size: "10Gi"
+
+postgresql:
+  enabled: true
+  persistence:
+    enabled: true
+    size: "5Gi"

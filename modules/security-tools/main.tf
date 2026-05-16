@@ -110,6 +110,28 @@ resource "aws_iam_role" "prometheus" {
   }
 }
 
+resource "aws_iam_role" "atlantis" {
+  name = "${var.environment}-atlantis-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRoleWithWebIdentity"
+        Effect = "Allow"
+        Principal = {
+          Federated = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/${var.oidc_issuer_url}"
+        }
+      }
+    ]
+  })
+
+  tags = {
+    Name        = "${var.environment}-atlantis-role"
+    Environment = var.environment
+  }
+}
+
 resource "aws_iam_policy" "harbor" {
   name        = "${var.environment}-harbor-policy"
   description = "IAM policy for Harbor container registry S3 storage"

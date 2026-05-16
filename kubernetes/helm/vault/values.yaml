@@ -1,0 +1,23 @@
+serviceAccount:
+  annotations:
+    eks.amazonaws.com/role-arn: "${vault_role_arn}"
+
+server:
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "256Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+
+  dataStorage:
+    enabled: true
+    size: 1Gi
+    storageClass: "gp2"
+
+  ha:
+    enabled: false
+
+injector:
+  enabled: true

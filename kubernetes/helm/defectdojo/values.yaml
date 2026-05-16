@@ -1,0 +1,27 @@
+serviceAccount:
+  annotations:
+    eks.amazonaws.com/role-arn: "${defectdojo_role_arn}"
+
+host: defectdojo.security.internal
+
+django:
+  ingress:
+    enabled: true
+
+postgresql:
+  enabled: true
+  auth:
+    username: defectdojo
+    database: defectdojo
+  primary:
+    persistence:
+      enabled: true
+      size: 5Gi
+
+resources:
+  requests:
+    cpu: "200m"
+    memory: "512Mi"
+  limits:
+    cpu: "1000m"
+    memory: "1Gi"

@@ -22,3 +22,8 @@ output "prometheus_role_arn" {
   description = "ARN of the IAM role for Prometheus"
   value       = aws_iam_role.prometheus.arn
 }
+
+output "atlantis_role_arn" {
+  description = "ARN of the IAM role for Atlantis"
+  value       = aws_iam_role.atlantis.arn
+}
