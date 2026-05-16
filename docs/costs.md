@@ -4,26 +4,26 @@
 
 ### Always-on resources
 
-| Resource                     | Region    | Type               | Cost/month |
-|------------------------------|-----------|-------------------|-----------|
-| EKS control plane            | Frankfurt | Managed           | ~$72      |
-| EKS control plane            | Paris     | Managed           | ~$72      |
-| EC2 nodes (2x t3.medium spot) | Frankfurt | Spot              | ~$20      |
-| EC2 nodes (2x t3.medium spot) | Paris     | Spot              | ~$20      |
-| EBS volumes (security tools) | Paris     | gp2 50GB          | ~$5       |
-| EBS volumes (prod)           | Frankfurt | gp2 20GB          | ~$2       |
-| S3 buckets (state + Harbor)  | All       | Standard          | ~$3       |
-| DynamoDB (state locking)     | All       | PAY_PER_REQUEST   | ~$1       |
-| KMS keys                     | All       | Per key           | ~$3       |
-| **Always-on total**          |           |                   | **~$198/month** |
+| Resource                       | Region    | Type              | Cost/month      |
+|--------------------------------|-----------|-------------------|----------------|
+| EKS control plane              | Frankfurt | Managed           | ~$72           |
+| EKS control plane              | Paris     | Managed           | ~$72           |
+| EC2 nodes (2x t3.medium spot) | Frankfurt | Spot              | ~$20           |
+| EC2 nodes (2x t3.medium spot) | Paris     | Spot              | ~$20           |
+| EBS volumes (security tools)   | Paris     | gp2 50GB          | ~$5            |
+| EBS volumes (prod)             | Frankfurt | gp2 20GB          | ~$2            |
+| S3 buckets (state + Harbor)    | All       | Standard          | ~$3            |
+| DynamoDB (state locking)       | All       | PAY_PER_REQUEST   | ~$1            |
+| KMS keys                       | All       | Per key           | ~$3            |
+| **Always-on total**            |           |                   | **~$198/month** |
 
 ### Ephemeral resources (Ireland)
 
-| Resource           | Type    | Cost/hour |
-|--------------------|---------|-----------|
-| EKS control plane  | Managed | $0.10     |
-| EC2 nodes (t3.medium spot) | Spot | ~$0.015   |
-| **Total per hour** |         | **~$0.115** |
+| Resource                        | Type    | Cost/hour   |
+|---------------------------------|---------|-------------|
+| EKS control plane               | Managed | $0.10       |
+| EC2 nodes (t3.medium spot)     | Spot    | ~$0.015     |
+| **Total per hour**              |         | **~$0.115** |
 
 Ireland only exists during testing. Cost depends on how long testing takes.
 Typical session: 1-2 hours = ~$0.20 per deploy.

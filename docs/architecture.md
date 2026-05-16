@@ -8,18 +8,21 @@ each with a specific purpose and responsibility.
 ## Regions
 
 ### Frankfurt (eu-central-1) — Production
+
 - Runs production workloads
 - EKS cluster with spot instances
 - Only receives deployments after passing all security gates
 - Never deployed to directly — always through the GitOps pipeline
 
 ### Ireland (eu-west-1) — Dev
+
 - Ephemeral environment — exists only during testing
 - Provisioned automatically after PR approval
 - Destroyed after manual testing and approval
 - Mirrors production infrastructure exactly
 
 ### Paris (eu-west-3) — Security Tools
+
 - Always-on security hub
 - Hosts all security and observability tooling
 - Self-hosted GitHub Actions runners
@@ -47,6 +50,7 @@ Ireland (Dev)
 ## Kubernetes Architecture
 
 Each region runs an EKS cluster with:
+
 - Spot instances (t3.medium) for cost efficiency
 - Private endpoint only — no public API server
 - IRSA for pod-level AWS permissions
@@ -81,6 +85,7 @@ Deploy to prod
 ## Secret Management
 
 All secrets are managed by Vault (Paris):
+
 - Pods authenticate via Kubernetes ServiceAccount + IRSA
 - Secrets injected at runtime via Vault Agent Injector
 - No secrets stored in Kubernetes Secrets or environment variables

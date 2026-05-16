@@ -61,14 +61,14 @@ Go to `Settings → Environments` and create:
 
 Go to `Settings → Secrets → Actions` and add:
 
-| Secret            | Where to get it                        |
-|-------------------|----------------------------------------|
-| `AWS_ROLE_ARN`    | Output of bootstrap terraform          |
-| `DEFECTDOJO_TOKEN`| DefectDojo UI → API v2 → Token         |
-| `DEFECTDOJO_URL`  | Your DefectDojo URL in Paris           |
-| `SONAR_TOKEN`     | SonarQube UI → My Account → Security   |
-| `SONAR_HOST_URL`  | Your SonarQube URL in Paris            |
-| `SLACK_WEBHOOK`   | Slack → Apps → Incoming Webhooks       |
+| Secret              | Where to get it                        |
+|---------------------|----------------------------------------|
+| `AWS_ROLE_ARN`      | Output of bootstrap terraform          |
+| `DEFECTDOJO_TOKEN`  | DefectDojo UI → API v2 → Token         |
+| `DEFECTDOJO_URL`    | Your DefectDojo URL in Paris           |
+| `SONAR_TOKEN`       | SonarQube UI → My Account → Security   |
+| `SONAR_HOST_URL`    | Your SonarQube URL in Paris            |
+| `SLACK_WEBHOOK`     | Slack → Apps → Incoming Webhooks       |
 
 ## Step 5 — Deploy security tools
 
