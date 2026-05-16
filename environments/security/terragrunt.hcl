@@ -1,4 +1,7 @@
-inputs = {
-  environment = "security"
-  vpc_cidr    = "10.2.0.0/16"
+locals {
+  environment_tags = {
+    Project     = "gitops-devsecops-aws"
+    Environment = "prod"
+    ManagedBy   = "terraform"
+  }
 }
