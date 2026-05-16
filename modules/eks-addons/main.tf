@@ -54,3 +54,20 @@ resource "aws_iam_role_policy_attachment" "lbc" {
   policy_arn = aws_iam_policy.lbc.arn
   role       = aws_iam_role.lbc.name
 }
+
+resource "helm_release" "lbc" {
+  name       = "${var.environment}-aws-load-balancer-controller"
+  repository = "https://aws.github.io/eks-charts"
+  chart      = "aws-load-balancer-controller"
+  namespace  = "kube-system"
+
+  set {
+    name  = "clusterName"
+    value = var.cluster_name
+  }
+
+  set {
+    name  = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
+    value = aws_iam_role.lbc.arn
+  }
+}
