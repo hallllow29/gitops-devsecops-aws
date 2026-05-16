@@ -1,0 +1,14 @@
+name: Security Scan
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        

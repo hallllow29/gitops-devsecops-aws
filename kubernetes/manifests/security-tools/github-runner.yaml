@@ -1,0 +1,21 @@
+# kubernetes/manifests/security-tools/github-runner.yaml
+apiVersion: actions.summerwindnet/v1alpha1
+kind: RunnerDeployment
+metadata:
+  name: gitops-runner
+  namespace: security-tools
+spec:
+  replicas: 1
+  template:
+    spec:
+      repository: YOUR_GITHUB_ORG/gitops-devsecops-aws
+      labels:
+        - self-hosted
+        - paris
+      resources:
+        requests:
+          cpu: "500m"
+          memory: "512Mi"
+        limits:
+          cpu: "1000m"
+          memory: "1Gi"
