@@ -1,11 +1,18 @@
 name: Deploy Prod
 
 on:
-  workflow_dispatch:             
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
 
 jobs:
   destroy-dev:
     runs-on: [self-hosted, paris]
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -15,6 +22,12 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: eu-west-1
+
+      - name: Cache Terragrunt
+        uses: actions/cache@v3
+        with:
+          path: ~/.terragrunt-cache
+          key: ${{ runner.os }}-terragrunt-${{ hashFiles('**/*.hcl') }}
 
       - name: Setup Terragrunt
         run: |
@@ -27,12 +40,60 @@ jobs:
           cd environments/dev
           terragrunt run-all destroy --terragrunt-non-interactive
 
+      - name: Notify on Failure
+        if: failure()
+        run: |
+          curl -X POST ${{ secrets.SLACK_WEBHOOK }} \
+            -d '{"text": "Destroy Dev falhou! Ver: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"}'
+
   deploy-prod:
     needs: destroy-dev
-    environment: production       
+    environment: production
     runs-on: [self-hosted, paris]
+    timeout-minutes: 60
+    permissions:
+      id-token: write
+      contents: read
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: eu-west-1
+
+      - name: Cache Terragrunt
+        uses: actions/cache@v3
+        with:
+          path: ~/.terragrunt-cache
+          key: ${{ runner.os }}-terragrunt-${{ hashFiles('**/*.hcl') }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.0"
+
+      - name: Setup Terragrunt
+        run: |
+          wget -q https://github.com/gruntwork-io/terragrunt/releases/download/v0.55.0/terragrunt_linux_amd64
+          chmod +x terragrunt_linux_amd64
+          mv terragrunt_linux_amd64 /usr/local/bin/terragrunt
+
       - name: Deploy to Prod
         run: |
           cd environments/prod
           terragrunt run-all apply --terragrunt-non-interactive
+
+      - name: Notify on Success
+        if: success()
+        run: |
+          curl -X POST ${{ secrets.SLACK_WEBHOOK }} \
+            -d '{"text": "Deploy Prod concluído com sucesso!"}'
+
+      - name: Notify on Failure
+        if: failure()
+        run: |
+          curl -X POST ${{ secrets.SLACK_WEBHOOK }} \
+            -d '{"text": "Deploy Prod falhou! Ver: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"}'

@@ -7,11 +7,19 @@ on:
     branches:
       - main
 
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   deploy-dev:
     if: github.event.pull_request.merged == true
     runs-on: [self-hosted, paris]
     environment: dev-approval
+    timeout-minutes: 120
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -26,6 +34,12 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "1.9.0"
+
+      - name: Cache Terragrunt
+        uses: actions/cache@v3
+        with:
+          path: ~/.terragrunt-cache
+          key: ${{ runner.os }}-terragrunt-${{ hashFiles('**/*.hcl') }}
 
       - name: Setup Terragrunt
         run: |
@@ -42,3 +56,9 @@ jobs:
         run: |
           chmod +x scripts/smoke-tests.sh
           ./scripts/smoke-tests.sh
+
+      - name: Notify on Failure
+        if: failure()
+        run: |
+          curl -X POST ${{ secrets.SLACK_WEBHOOK }} \
+            -d '{"text": "Deploy Dev falhou! Ver: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"}'

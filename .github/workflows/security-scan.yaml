@@ -5,9 +5,17 @@ on:
     branches:
       - dev
 
+concurrency:
+  group: security-scan-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   scan:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -53,3 +61,9 @@ jobs:
             -F "product_name=gitops-devsecops-aws" \
             -F "engagement_name=CI Pipeline" \
             https://${{ secrets.DEFECTDOJO_URL }}/api/v2/import-scan/
+
+      - name: Notify on Failure
+        if: failure()
+        run: |
+          curl -X POST ${{ secrets.SLACK_WEBHOOK }} \
+            -d '{"text": "Security Scan falhou! Ver: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"}'

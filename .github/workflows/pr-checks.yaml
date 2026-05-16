@@ -5,9 +5,17 @@ on:
     branches:
       - main
 
+concurrency:
+  group: pr-checks-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   pr-checks:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -22,6 +30,12 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "1.9.0"
+
+      - name: Cache Terragrunt
+        uses: actions/cache@v3
+        with:
+          path: ~/.terragrunt-cache
+          key: ${{ runner.os }}-terragrunt-${{ hashFiles('**/*.hcl') }}
 
       - name: Setup Terragrunt
         run: |
@@ -77,3 +91,9 @@ jobs:
             -F "product_name=gitops-devsecops-aws" \
             -F "engagement_name=PR Check" \
             https://${{ secrets.DEFECTDOJO_URL }}/api/v2/import-scan/
+
+      - name: Notify on Failure
+        if: failure()
+        run: |
+          curl -X POST ${{ secrets.SLACK_WEBHOOK }} \
+            -d '{"text": "PR Check falhou! Ver: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"}'
