@@ -1,0 +1,9 @@
+directory:
+  - .
+framework:
+  - terraform
+skip-check:
+  - CKV_AWS_144  # S3 cross-region replication (não necessário para este projecto)
+  - CKV_AWS_18   # S3 access logging (opcional para small teams)
+soft-fail: false
+output: sarif

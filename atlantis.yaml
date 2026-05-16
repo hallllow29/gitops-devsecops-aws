@@ -1,0 +1,16 @@
+version: 3
+automerge: false
+delete_source_branch_on_merge: false
+repos:
+  - id: /.*/
+    allowed_overrides:
+      - workflow
+    allow_custom_workflows: true
+workflows:
+  default:
+    plan:
+      steps:
+        - run: terragrunt run-all plan --terragrunt-non-interactive
+    apply:
+      steps:
+        - run: terragrunt run-all apply --terragrunt-non-interactive
