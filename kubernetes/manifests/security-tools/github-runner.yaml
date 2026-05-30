@@ -1,5 +1,5 @@
 # kubernetes/manifests/security-tools/github-runner.yaml
-apiVersion: actions.summerwindnet/v1alpha1
+apiVersion: actions.summerwind.dev/v1alpha1
 kind: RunnerDeployment
 metadata:
   name: gitops-runner
@@ -8,7 +8,7 @@ spec:
   replicas: 1
   template:
     spec:
-      repository: YOUR_GITHUB_ORG/gitops-devsecops-aws
+      repository: hallllow29/gitops-devsecops-aws
       labels:
         - self-hosted
         - paris

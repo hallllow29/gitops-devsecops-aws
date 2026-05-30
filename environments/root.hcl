@@ -12,7 +12,7 @@ remote_state {
   config = {
     bucket         = "gitops-state-${local.environment}"
     key            = "${path_relative_to_include()}/terraform.tfstate"
-    region         = local.region
+    region         = "eu-central-1"
     dynamodb_table = "gitops-lock-${local.environment}"
     encrypt        = true
   }
@@ -24,6 +24,16 @@ generate "provider" {
   contents  = <<EOF
 provider "aws" {
   region = "${local.region}"
+}
+EOF
+}
+
+generate "backend" {
+  path      = "backend.tf"
+  if_exists = "overwrite"
+  contents  = <<EOF
+terraform {
+  backend "s3" {}
 }
 EOF
 }
