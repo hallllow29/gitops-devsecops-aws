@@ -11,7 +11,7 @@ concurrency:
 
 jobs:
   pr-checks:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, paris]
     timeout-minutes: 30
     permissions:
       id-token: write
