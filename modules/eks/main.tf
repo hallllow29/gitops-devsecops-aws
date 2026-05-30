@@ -38,6 +38,18 @@ resource "aws_iam_openid_connect_provider" "eks" {
   url             = aws_eks_cluster.main.identity[0].oidc[0].issuer
 }
 
+resource "aws_kms_key" "eks_secrets" {
+  count                   = var.enable_secrets_encryption ? 1 : 0
+  description             = "KMS key for EKS ${var.environment} secrets encryption"
+  enable_key_rotation     = true
+  deletion_window_in_days = 7
+
+  tags = {
+    Name        = "${var.environment}-eks-secrets-key"
+    Environment = var.environment
+  }
+}
+
 resource "aws_eks_cluster" "main" {
   name = "${var.environment}-eks"
 
@@ -49,7 +61,22 @@ resource "aws_eks_cluster" "main" {
   version  = var.kubernetes_version
 
   vpc_config {
-    subnet_ids = values(var.private_subnet_ids)
+    subnet_ids                   = values(var.private_subnet_ids)
+    endpoint_private_access      = true
+    endpoint_public_access       = true
+    public_access_cidrs          = var.endpoint_public_access_cidrs
+  }
+
+  enabled_cluster_log_types = var.enable_control_plane_logs ? ["api", "audit", "authenticator", "controllerManager", "scheduler"] : []
+
+  dynamic "encryption_config" {
+    for_each = var.enable_secrets_encryption ? [1] : []
+    content {
+      provider {
+        key_arn = aws_kms_key.eks_secrets[0].arn
+      }
+      resources = ["secrets"]
+    }
   }
 
   depends_on = [

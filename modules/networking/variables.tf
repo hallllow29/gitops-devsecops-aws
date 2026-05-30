@@ -18,3 +18,15 @@ variable "private_subnets" {
   type        = map(string)
 }
 
+variable "enable_flow_logs" {
+  description = "Enable VPC flow logs to CloudWatch"
+  type        = bool
+  default     = true
+}
+
+variable "flow_log_retention_days" {
+  description = "Retention in days for VPC flow logs CloudWatch log group"
+  type        = number
+  default     = 7
+}
+
