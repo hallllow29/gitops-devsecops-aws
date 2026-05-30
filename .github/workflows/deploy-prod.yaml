@@ -23,28 +23,23 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: eu-west-1
 
-      - name: Cache Terragrunt
-        uses: actions/cache@v3
-        with:
-          path: ~/.terragrunt-cache
-          key: ${{ runner.os }}-terragrunt-${{ hashFiles('**/*.hcl') }}
-
       - name: Setup Terragrunt
         run: |
-          wget -q https://github.com/gruntwork-io/terragrunt/releases/download/v0.55.0/terragrunt_linux_amd64
-          chmod +x terragrunt_linux_amd64
-          mv terragrunt_linux_amd64 /usr/local/bin/terragrunt
+          mkdir -p $HOME/bin
+          curl -fsSL -o $HOME/bin/terragrunt https://github.com/gruntwork-io/terragrunt/releases/download/v1.0.6/terragrunt_linux_amd64
+          chmod +x $HOME/bin/terragrunt
+          echo "$HOME/bin" >> $GITHUB_PATH
 
       - name: Destroy Dev
         run: |
-          cd environments/dev
-          terragrunt run-all destroy --terragrunt-non-interactive
+          terragrunt run --all destroy --working-dir environments/dev --non-interactive
 
       - name: Notify on Failure
         if: failure()
+        continue-on-error: true
         run: |
-          curl -X POST ${{ secrets.SLACK_WEBHOOK }} \
-            -d '{"text": "Destroy Dev falhou! Ver: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"}'
+          curl -fsS --max-time 30 -X POST ${{ secrets.SLACK_WEBHOOK }} \
+            -d '{"text": "Destroy Dev falhou! Ver: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' || true
 
   deploy-prod:
     needs: destroy-dev
@@ -62,13 +57,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: eu-west-1
-
-      - name: Cache Terragrunt
-        uses: actions/cache@v3
-        with:
-          path: ~/.terragrunt-cache
-          key: ${{ runner.os }}-terragrunt-${{ hashFiles('**/*.hcl') }}
+          aws-region: eu-central-1
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -77,23 +66,25 @@ jobs:
 
       - name: Setup Terragrunt
         run: |
-          wget -q https://github.com/gruntwork-io/terragrunt/releases/download/v0.55.0/terragrunt_linux_amd64
-          chmod +x terragrunt_linux_amd64
-          mv terragrunt_linux_amd64 /usr/local/bin/terragrunt
+          mkdir -p $HOME/bin
+          curl -fsSL -o $HOME/bin/terragrunt https://github.com/gruntwork-io/terragrunt/releases/download/v1.0.6/terragrunt_linux_amd64
+          chmod +x $HOME/bin/terragrunt
+          echo "$HOME/bin" >> $GITHUB_PATH
 
       - name: Deploy to Prod
         run: |
-          cd environments/prod
-          terragrunt run-all apply --terragrunt-non-interactive
+          terragrunt run --all apply --working-dir environments/prod --non-interactive
 
       - name: Notify on Success
         if: success()
+        continue-on-error: true
         run: |
-          curl -X POST ${{ secrets.SLACK_WEBHOOK }} \
-            -d '{"text": "Deploy Prod concluído com sucesso!"}'
+          curl -fsS --max-time 30 -X POST ${{ secrets.SLACK_WEBHOOK }} \
+            -d '{"text": "Deploy Prod concluído com sucesso!"}' || true
 
       - name: Notify on Failure
         if: failure()
+        continue-on-error: true
         run: |
-          curl -X POST ${{ secrets.SLACK_WEBHOOK }} \
-            -d '{"text": "Deploy Prod falhou! Ver: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"}'
+          curl -fsS --max-time 30 -X POST ${{ secrets.SLACK_WEBHOOK }} \
+            -d '{"text": "Deploy Prod falhou! Ver: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' || true
