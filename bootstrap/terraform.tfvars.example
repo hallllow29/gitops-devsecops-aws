@@ -1,0 +1,11 @@
+# Copia este ficheiro para terraform.tfvars e ajusta os valores.
+
+# GitHub repo em formato owner/repo. Usado para scoping do OIDC trust.
+github_repo = "YOUR_GITHUB_USER/gitops-devsecops-aws"
+
+# Regiões por ambiente (opcional — override do default)
+# regions = {
+#   prod     = "eu-central-1"
+#   dev      = "eu-west-1"
+#   security = "eu-west-3"
+# }

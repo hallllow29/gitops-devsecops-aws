@@ -1,19 +1,19 @@
 name: Deploy Dev
 
+# Corre quando um PR é mergeado para dev.
+# Cria/atualiza o ambiente DEV (ephemeral) para testes.
+
 on:
-  pull_request:
-    types:
-      - closed
+  push:
     branches:
-      - main
+      - dev
 
 concurrency:
-  group: deploy-${{ github.ref }}
-  cancel-in-progress: true
+  group: deploy-dev
+  cancel-in-progress: false
 
 jobs:
   deploy-dev:
-    if: github.event.pull_request.merged == true
     runs-on: [self-hosted, paris]
     environment: dev-approval
     timeout-minutes: 120
@@ -43,7 +43,7 @@ jobs:
           chmod +x $HOME/bin/terragrunt
           echo "$HOME/bin" >> $GITHUB_PATH
 
-      - name: Deploy to Dev
+      - name: Deploy to Dev (Ireland)
         run: |
           terragrunt run --all apply --working-dir environments/dev --non-interactive
 
@@ -63,3 +63,10 @@ jobs:
         run: |
           curl -fsS --max-time 30 -X POST ${{ secrets.SLACK_WEBHOOK }} \
             -d '{"text": "Deploy Dev falhou! Ver: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' || true
+
+      - name: Notify on Success
+        if: success()
+        continue-on-error: true
+        run: |
+          curl -fsS --max-time 30 -X POST ${{ secrets.SLACK_WEBHOOK }} \
+            -d '{"text": "Deploy Dev concluído! Faz testes e depois abre PR dev → main para promover a prod."}' || true

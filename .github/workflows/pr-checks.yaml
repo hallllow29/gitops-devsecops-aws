@@ -1,8 +1,12 @@
 name: PR Checks
 
+# Corre em PRs contra dev ou main.
+# Validate + plan + OPA + SonarQube + Trivy.
+
 on:
   pull_request:
     branches:
+      - dev
       - main
 
 concurrency:
@@ -53,7 +57,7 @@ jobs:
         continue-on-error: true
         run: |
           cd environments/dev
-          terragrunt run --all plan -- -out=tfplan
+          terragrunt run --all plan --queue-exclude-dir eks-addons -- -out=tfplan
 
       - name: Setup Conftest
         run: |
@@ -65,7 +69,7 @@ jobs:
         continue-on-error: true
         run: |
           cd environments/dev
-          terragrunt run --all show -- -json tfplan > $GITHUB_WORKSPACE/plan.json || true
+          terragrunt run --all show --queue-exclude-dir eks-addons -- -json tfplan > $GITHUB_WORKSPACE/plan.json || true
           cd $GITHUB_WORKSPACE
           conftest test plan.json --policy policies/ || true
 

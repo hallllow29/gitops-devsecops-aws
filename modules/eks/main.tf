@@ -76,13 +76,13 @@ resource "aws_eks_node_group" "main" {
   node_group_name = "${var.environment}-node-group"
   node_role_arn = aws_iam_role.node.arn
   subnet_ids = values(var.private_subnet_ids)
-  capacity_type = "SPOT"
-  instance_types = ["t3.large"]
+  capacity_type  = var.capacity_type
+  instance_types = var.instance_types
 
   scaling_config {
-    desired_size = 2
-    max_size     = 4
-    min_size     = 2
+    desired_size = var.desired_size
+    max_size     = var.max_size
+    min_size     = var.min_size
   }
 
   update_config {
