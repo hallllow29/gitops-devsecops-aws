@@ -8,7 +8,8 @@ spec:
   replicas: 1
   template:
     spec:
-      repository: hallllow29/gitops-devsecops-aws
+      # Substitui pelo teu owner/repo do GitHub antes do kubectl apply
+      repository: YOUR_GITHUB_USER/gitops-devsecops-aws
       labels:
         - self-hosted
         - paris

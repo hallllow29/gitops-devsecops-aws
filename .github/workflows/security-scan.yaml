@@ -1,9 +1,17 @@
 name: Security Scan
 
+# Corre quando um PR é aberto contra dev ou main.
+# Faz scans de secrets e IaC ANTES de qualquer review humano.
+
 on:
-  push:
+  pull_request:
     branches:
       - dev
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
 
 concurrency:
   group: security-scan-${{ github.ref }}
@@ -16,6 +24,7 @@ jobs:
     permissions:
       id-token: write
       contents: read
+      pull-requests: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -42,11 +51,8 @@ jobs:
           framework: terraform
           soft_fail: true
 
-      - name: Inspect KICS output
-        run: |
-          ls -la results/ || true
-          find . -name "results.json" -type f 2>/dev/null | head -5
-          head -3 results/results.json 2>/dev/null || true
+      - name: Find Checkov output
+        run: find . -name "results*.sarif" -type f 2>/dev/null || true
 
       - name: Upload KICS results to DefectDojo
         continue-on-error: true
@@ -60,9 +66,6 @@ jobs:
             -F "auto_create_context=true" \
             -F "product_type_name=Research and Development" \
             http://${{ secrets.DEFECTDOJO_URL }}/api/v2/import-scan/
-
-      - name: Find Checkov output
-        run: find . -name "results*.sarif" -type f 2>/dev/null || true
 
       - name: Upload Checkov results to DefectDojo
         continue-on-error: true

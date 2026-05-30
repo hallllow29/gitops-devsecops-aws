@@ -4,15 +4,25 @@ data "tls_certificate" "eks_oidc" {
   url = aws_eks_cluster.main.identity[0].oidc[0].issuer
 }
 
+locals {
+  caller_arn = data.aws_caller_identity.current.arn
+  # Quando o caller é uma assumed-role (ex: github-actions via OIDC), o ARN é do tipo
+  # arn:aws:sts::ACCOUNT:assumed-role/RoleName/SessionName, mas o EKS Access Entry só aceita
+  # arn:aws:iam::ACCOUNT:role/RoleName. Aqui convertemos se necessário.
+  is_assumed_role  = can(regex("assumed-role/", local.caller_arn))
+  caller_role_name = local.is_assumed_role ? regex("assumed-role/([^/]+)", local.caller_arn)[0] : ""
+  caller_principal_arn = local.is_assumed_role ? "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${local.caller_role_name}" : local.caller_arn
+}
+
 resource "aws_eks_access_entry" "caller" {
   cluster_name  = aws_eks_cluster.main.name
-  principal_arn = data.aws_caller_identity.current.arn
+  principal_arn = local.caller_principal_arn
   type          = "STANDARD"
 }
 
 resource "aws_eks_access_policy_association" "caller_admin" {
   cluster_name  = aws_eks_cluster.main.name
-  principal_arn = data.aws_caller_identity.current.arn
+  principal_arn = local.caller_principal_arn
   policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
 
   access_scope {
@@ -76,13 +86,13 @@ resource "aws_eks_node_group" "main" {
   node_group_name = "${var.environment}-node-group"
   node_role_arn = aws_iam_role.node.arn
   subnet_ids = values(var.private_subnet_ids)
-  capacity_type = "SPOT"
-  instance_types = ["t3.large"]
+  capacity_type  = var.capacity_type
+  instance_types = var.instance_types
 
   scaling_config {
-    desired_size = 2
-    max_size     = 4
-    min_size     = 2
+    desired_size = var.desired_size
+    max_size     = var.max_size
+    min_size     = var.min_size
   }
 
   update_config {

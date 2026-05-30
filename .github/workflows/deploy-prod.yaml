@@ -1,7 +1,15 @@
 name: Deploy Prod
 
+# Corre quando um PR de dev é mergeado para main.
+# 1) Destrói o ambiente dev (que serviu para validação)
+# 2) Faz deploy/atualização no prod (Frankfurt)
+
 on:
-  workflow_dispatch:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
 
 concurrency:
   group: deploy-prod
@@ -9,6 +17,7 @@ concurrency:
 
 jobs:
   destroy-dev:
+    if: github.event.pull_request.merged == true
     runs-on: [self-hosted, paris]
     permissions:
       id-token: write
@@ -22,6 +31,12 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: eu-west-1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.0"
+          terraform_wrapper: false
 
       - name: Setup Terragrunt
         run: |
@@ -42,6 +57,7 @@ jobs:
             -d '{"text": "Destroy Dev falhou! Ver: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' || true
 
   deploy-prod:
+    if: github.event.pull_request.merged == true
     needs: destroy-dev
     environment: production
     runs-on: [self-hosted, paris]
@@ -72,7 +88,7 @@ jobs:
           chmod +x $HOME/bin/terragrunt
           echo "$HOME/bin" >> $GITHUB_PATH
 
-      - name: Deploy to Prod
+      - name: Deploy to Prod (Frankfurt)
         run: |
           terragrunt run --all apply --working-dir environments/prod --non-interactive
 
