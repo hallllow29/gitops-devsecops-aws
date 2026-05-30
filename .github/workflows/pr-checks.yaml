@@ -64,7 +64,7 @@ jobs:
         continue-on-error: true
         run: |
           cd environments/dev
-          terragrunt run --all show -json tfplan > $GITHUB_WORKSPACE/plan.json || true
+          terragrunt run --all show -- -json tfplan > $GITHUB_WORKSPACE/plan.json || true
           cd $GITHUB_WORKSPACE
           conftest test plan.json --policy policies/ || true
 
@@ -82,15 +82,15 @@ jobs:
           scan-type: fs
           scan-ref: .
           severity: HIGH,CRITICAL
-          format: sarif
-          output: trivy-results.sarif
+          format: json
+          output: trivy-results.json
 
       - name: Upload Trivy results to DefectDojo
         continue-on-error: true
         run: |
           curl -sS --max-time 60 -w "\nHTTP: %{http_code}\n" -X POST \
             -H "Authorization: Token ${{ secrets.DEFECTDOJO_TOKEN }}" \
-            -F "file=@trivy-results.sarif" \
+            -F "file=@trivy-results.json" \
             -F "scan_type=Trivy Scan" \
             -F "product_name=gitops-devsecops-aws" \
             -F "engagement_name=PR Check" \
