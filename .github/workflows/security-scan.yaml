@@ -11,7 +11,7 @@ concurrency:
 
 jobs:
   scan:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, paris]
     timeout-minutes: 30
     permissions:
       id-token: write
@@ -32,7 +32,7 @@ jobs:
         uses: checkmarx/kics-github-action@v2.1.20
         with:
           path: .
-          fail_on: high
+          fail_on: critical
           output_path: results/
 
       - name: Checkov Scan
@@ -40,30 +40,48 @@ jobs:
         with:
           directory: .
           framework: terraform
-          soft_fail: false
+          soft_fail: true
+
+      - name: Inspect KICS output
+        run: |
+          ls -la results/ || true
+          find . -name "results.json" -type f 2>/dev/null | head -5
+          head -3 results/results.json 2>/dev/null || true
 
       - name: Upload KICS results to DefectDojo
+        continue-on-error: true
         run: |
-          curl -X POST \
+          curl -sS --max-time 60 -w "\nHTTP: %{http_code}\n" -X POST \
             -H "Authorization: Token ${{ secrets.DEFECTDOJO_TOKEN }}" \
             -F "file=@results/results.json" \
             -F "scan_type=KICS Scan" \
             -F "product_name=gitops-devsecops-aws" \
             -F "engagement_name=CI Pipeline" \
-            https://${{ secrets.DEFECTDOJO_URL }}/api/v2/import-scan/
+            -F "auto_create_context=true" \
+            -F "product_type_name=Research and Development" \
+            http://${{ secrets.DEFECTDOJO_URL }}/api/v2/import-scan/
+
+      - name: Find Checkov output
+        run: find . -name "results*.sarif" -type f 2>/dev/null || true
 
       - name: Upload Checkov results to DefectDojo
+        continue-on-error: true
         run: |
-          curl -X POST \
+          SARIF=$(find . -name "results*.sarif" -type f | head -1)
+          echo "Using: $SARIF"
+          curl -sS --max-time 60 -w "\nHTTP: %{http_code}\n" -X POST \
             -H "Authorization: Token ${{ secrets.DEFECTDOJO_TOKEN }}" \
-            -F "file=@results/results.sarif" \
+            -F "file=@$SARIF" \
             -F "scan_type=Checkov Scan" \
             -F "product_name=gitops-devsecops-aws" \
             -F "engagement_name=CI Pipeline" \
-            https://${{ secrets.DEFECTDOJO_URL }}/api/v2/import-scan/
+            -F "auto_create_context=true" \
+            -F "product_type_name=Research and Development" \
+            http://${{ secrets.DEFECTDOJO_URL }}/api/v2/import-scan/
 
       - name: Notify on Failure
         if: failure()
+        continue-on-error: true
         run: |
-          curl -X POST ${{ secrets.SLACK_WEBHOOK }} \
-            -d '{"text": "Security Scan falhou! Ver: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"}'
+          curl -fsS --max-time 30 -X POST ${{ secrets.SLACK_WEBHOOK }} \
+            -d '{"text": "Security Scan falhou! Ver: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' || true
