@@ -1,0 +1,13 @@
+path:
+  - .
+exclude-paths:
+  - .terraform
+  - .git
+fail-on:
+  - high
+  - medium
+output-path: results/
+output-name: results
+report-formats:
+  - json
+  - sarif

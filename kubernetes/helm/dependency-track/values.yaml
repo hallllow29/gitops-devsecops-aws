@@ -1,0 +1,26 @@
+serviceAccount:
+  annotations:
+    eks.amazonaws.com/role-arn: "${dtrack_role_arn}"
+
+frontend:
+  resources:
+    requests:
+      cpu: "200m"
+      memory: "256Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+
+apiServer:
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "1000m"
+      memory: "2Gi"
+
+  persistentVolume:
+    enabled: true
+    size: 5Gi
+    storageClass: "gp2"

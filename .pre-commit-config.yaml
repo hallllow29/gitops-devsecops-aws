@@ -1,0 +1,17 @@
+repos:
+  - repo: https://github.com/antonbabenko/pre-commit-terraform
+    rev: v1.88.0
+    hooks:
+      - id: terraform_fmt
+      - id: terraform_validate
+      - id: terraform_tflint
+      - id: terraform_checkov
+        args:
+          - --args=--soft-fail
+
+  - repo: https://github.com/trufflesecurity/trufflehog
+    rev: v3.63.0
+    hooks:
+      - id: trufflehog
+        args:
+          - --only-verified

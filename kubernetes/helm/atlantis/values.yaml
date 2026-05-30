@@ -1,0 +1,29 @@
+serviceAccount:
+  annotations:
+    eks.amazonaws.com/role-arn: "${atlantis_role_arn}"
+
+resources:
+  requests:
+    cpu: "200m"
+    memory: "256Mi"
+  limits:
+    cpu: "500m"
+    memory: "512Mi"
+
+storage:
+  enabled: true
+  size: 5Gi
+  storageClassName: "gp2"
+
+orgAllowlist: "github.com/YOUR_ORG/*"
+
+github:
+  user: "${github_user}"
+  token: "${github_token}"
+  secret: "${github_webhook_secret}"
+
+repoConfig: |
+  repos:
+  - id: /.*/
+    allowed_overrides: [workflow]
+    allow_custom_workflows: true

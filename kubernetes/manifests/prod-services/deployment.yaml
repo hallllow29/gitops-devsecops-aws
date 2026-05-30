@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prod-app
+  namespace: prod-services
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: prod-app
+  template:
+    metadata:
+      labels:
+        app: prod-app
+    spec:
+      serviceAccountName: prod-app
+      containers:
+        - name: prod-app
+          image: harbor.security.internal/prod-app:latest
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"

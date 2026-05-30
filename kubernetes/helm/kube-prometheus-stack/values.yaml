@@ -1,0 +1,38 @@
+serviceAccount:
+  annotations:
+    eks.amazonaws.com/role-arn: "${prometheus_role_arn}"
+
+prometheus:
+  prometheusSpec:
+    retention: 15d
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: "gp2"
+          resources:
+            requests:
+              storage: 10Gi
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "1Gi"
+      limits:
+        cpu: "1000m"
+        memory: "2Gi"
+
+grafana:
+  enabled: true
+  persistence:
+    enabled: true
+    size: 5Gi
+    storageClassName: "gp2"
+  resources:
+    requests:
+      cpu: "200m"
+      memory: "256Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+
+alertmanager:
+  enabled: true

@@ -1,0 +1,69 @@
+name: Security Scan
+
+on:
+  push:
+    branches:
+      - dev
+
+concurrency:
+  group: security-scan-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: TruffleHog Scan
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          extra_args: --only-verified
+
+      - name: KICS Scan
+        uses: checkmarx/kics-github-action@v2.1.20
+        with:
+          path: .
+          fail_on: high
+          output_path: results/
+
+      - name: Checkov Scan
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: .
+          framework: terraform
+          soft_fail: false
+
+      - name: Upload KICS results to DefectDojo
+        run: |
+          curl -X POST \
+            -H "Authorization: Token ${{ secrets.DEFECTDOJO_TOKEN }}" \
+            -F "file=@results/results.json" \
+            -F "scan_type=KICS Scan" \
+            -F "product_name=gitops-devsecops-aws" \
+            -F "engagement_name=CI Pipeline" \
+            https://${{ secrets.DEFECTDOJO_URL }}/api/v2/import-scan/
+
+      - name: Upload Checkov results to DefectDojo
+        run: |
+          curl -X POST \
+            -H "Authorization: Token ${{ secrets.DEFECTDOJO_TOKEN }}" \
+            -F "file=@results/results.sarif" \
+            -F "scan_type=Checkov Scan" \
+            -F "product_name=gitops-devsecops-aws" \
+            -F "engagement_name=CI Pipeline" \
+            https://${{ secrets.DEFECTDOJO_URL }}/api/v2/import-scan/
+
+      - name: Notify on Failure
+        if: failure()
+        run: |
+          curl -X POST ${{ secrets.SLACK_WEBHOOK }} \
+            -d '{"text": "Security Scan falhou! Ver: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"}'

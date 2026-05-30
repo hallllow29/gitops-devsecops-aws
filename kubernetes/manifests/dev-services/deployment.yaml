@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dev-app
+  namespace: dev-services
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dev-app
+  template:
+    metadata:
+      labels:
+        app: dev-app
+    spec:
+      serviceAccountName: dev-app
+      containers:
+        - name: dev-app
+          image: harbor.security.internal/dev-app:latest
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
