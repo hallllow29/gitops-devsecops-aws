@@ -1,12 +1,13 @@
 # GitOps DevSecOps AWS
 
-[![Security Scan](https://github.com/hallllow29/gitops-devsecops-aws/actions/workflows/security-scan.yaml/badge.svg)](https://github.com/hallllow29/gitops-devsecops-aws/actions/workflows/security-scan.yaml)
-[![PR Checks](https://github.com/hallllow29/gitops-devsecops-aws/actions/workflows/pr-checks.yaml/badge.svg)](https://github.com/hallllow29/gitops-devsecops-aws/actions/workflows/pr-checks.yaml)
-[![Deploy Dev](https://github.com/hallllow29/gitops-devsecops-aws/actions/workflows/deploy-dev.yaml/badge.svg)](https://github.com/hallllow29/gitops-devsecops-aws/actions/workflows/deploy-dev.yaml)
+[![IaC: Terraform](https://img.shields.io/badge/IaC-Terraform%201.9%2B-7B42BC?logo=terraform&logoColor=white)](https://www.terraform.io/)
+[![Orchestration: Terragrunt](https://img.shields.io/badge/orchestration-Terragrunt%201.0%2B-2BAACB)](https://terragrunt.gruntwork.io/)
+[![Cloud: AWS](https://img.shields.io/badge/cloud-AWS-232F3E?logo=amazonaws&logoColor=FF9900)](https://aws.amazon.com/)
+[![Runtime: Kubernetes](https://img.shields.io/badge/runtime-Kubernetes%201.31-326CE5?logo=kubernetes&logoColor=white)](https://kubernetes.io/)
+[![CI/CD: GitHub Actions](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-2088FF?logo=githubactions&logoColor=white)](https://github.com/features/actions)
+[![Methodology: GitOps](https://img.shields.io/badge/methodology-GitOps-3F73E3)](https://opengitops.dev/)
+[![DevSecOps](https://img.shields.io/badge/security-DevSecOps-EE2200)](https://www.devsecops.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Terraform](https://img.shields.io/badge/terraform-1.9+-7B42BC.svg?logo=terraform)](https://www.terraform.io/)
-[![Terragrunt](https://img.shields.io/badge/terragrunt-1.0+-blue.svg)](https://terragrunt.gruntwork.io/)
-[![AWS](https://img.shields.io/badge/AWS-EKS-FF9900.svg?logo=amazonaws)](https://aws.amazon.com/eks/)
 
 A **production-style GitOps + DevSecOps reference architecture** for AWS that demonstrates
 how a small/medium team can ship infrastructure-as-code changes safely through automated
