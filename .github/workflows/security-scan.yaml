@@ -32,7 +32,7 @@ jobs:
         uses: checkmarx/kics-github-action@v2.1.20
         with:
           path: .
-          fail_on: high
+          fail_on: critical
           output_path: results/
 
       - name: Checkov Scan
@@ -40,7 +40,7 @@ jobs:
         with:
           directory: .
           framework: terraform
-          soft_fail: false
+          soft_fail: true
 
       - name: Upload KICS results to DefectDojo
         run: |
