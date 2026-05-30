@@ -42,10 +42,16 @@ jobs:
           framework: terraform
           soft_fail: true
 
+      - name: Inspect KICS output
+        run: |
+          ls -la results/ || true
+          find . -name "results.json" -type f 2>/dev/null | head -5
+          head -3 results/results.json 2>/dev/null || true
+
       - name: Upload KICS results to DefectDojo
         continue-on-error: true
         run: |
-          curl -fsS --max-time 60 -X POST \
+          curl -sS --max-time 60 -w "\nHTTP: %{http_code}\n" -X POST \
             -H "Authorization: Token ${{ secrets.DEFECTDOJO_TOKEN }}" \
             -F "file=@results/results.json" \
             -F "scan_type=KICS Scan" \
@@ -63,7 +69,7 @@ jobs:
         run: |
           SARIF=$(find . -name "results*.sarif" -type f | head -1)
           echo "Using: $SARIF"
-          curl -fsS --max-time 60 -X POST \
+          curl -sS --max-time 60 -w "\nHTTP: %{http_code}\n" -X POST \
             -H "Authorization: Token ${{ secrets.DEFECTDOJO_TOKEN }}" \
             -F "file=@$SARIF" \
             -F "scan_type=Checkov Scan" \
