@@ -52,18 +52,25 @@ jobs:
             -F "product_name=gitops-devsecops-aws" \
             -F "engagement_name=CI Pipeline" \
             -F "auto_create_context=true" \
+            -F "product_type_name=Research and Development" \
             http://${{ secrets.DEFECTDOJO_URL }}/api/v2/import-scan/
+
+      - name: Find Checkov output
+        run: find . -name "results*.sarif" -type f 2>/dev/null || true
 
       - name: Upload Checkov results to DefectDojo
         continue-on-error: true
         run: |
+          SARIF=$(find . -name "results*.sarif" -type f | head -1)
+          echo "Using: $SARIF"
           curl -fsS --max-time 60 -X POST \
             -H "Authorization: Token ${{ secrets.DEFECTDOJO_TOKEN }}" \
-            -F "file=@results/results.sarif" \
+            -F "file=@$SARIF" \
             -F "scan_type=Checkov Scan" \
             -F "product_name=gitops-devsecops-aws" \
             -F "engagement_name=CI Pipeline" \
             -F "auto_create_context=true" \
+            -F "product_type_name=Research and Development" \
             http://${{ secrets.DEFECTDOJO_URL }}/api/v2/import-scan/
 
       - name: Notify on Failure
